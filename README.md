@@ -1,4 +1,4 @@
-# DbD Evolution: Resurrection
+# DbD Evolution
 
 インフレ系クリック・放置ゲームです。
 
