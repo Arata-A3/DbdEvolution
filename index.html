@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#080808">
     <title>DbD Incremental - Resurrection</title>
     <style>
         :root {
@@ -129,13 +130,25 @@
             font-family: 'Inter', sans-serif;
             overflow: hidden;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button,
+        .upgrade-card,
+        .skin-opt,
+        .notice {
+            touch-action: manipulation; /* ダブルタップでの拡大を防ぐ */
         }
 
         #app {
             display: flex;
             flex-direction: column;
             height: 100vh;
+            height: 100dvh;
             padding: 15px;
+            padding: max(15px, env(safe-area-inset-top)) max(15px, env(safe-area-inset-right)) max(15px, env(safe-area-inset-bottom)) max(15px, env(safe-area-inset-left));
             gap: 10px;
         }
 
@@ -212,6 +225,8 @@
             position: relative;
             align-items: center;
             justify-content: center;
+            touch-action: none; /* 長押し中にスクロール・ズームさせない */
+            cursor: pointer;
         }
 
         .generator-box {
@@ -517,6 +532,44 @@
             font-weight: bold;
         }
 
+        .save-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .control-hint {
+            font-size: 0.65rem;
+            opacity: 0.7;
+        }
+
+        .stats-box {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            text-align: right;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+
+        .cost-label {
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .cost-bp { color: var(--accent-bp); }
+        .cost-is { color: var(--accent-is); }
+        .cost-ap { color: var(--accent-asc); }
+        .cost-tp { color: var(--accent-tra); }
+
+        .action-btn {
+            color: #000;
+            font-weight: bold;
+            width: 100%;
+            border: none;
+            padding: 6px;
+            border-radius: 4px;
+        }
+
         .skin-selector {
             display: flex;
             flex-wrap: wrap;
@@ -561,6 +614,181 @@
                 transform: translate(1px, 1px);
             }
         }
+
+        /* ===== スマホ・タブレット（縦長・狭い画面） ===== */
+        @media (max-width: 768px) {
+            #app {
+                padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+                gap: 6px;
+            }
+
+            header {
+                padding: 6px 10px;
+                gap: 8px;
+            }
+
+            header h1 {
+                font-size: 0.85rem;
+                white-space: nowrap;
+            }
+
+            .currency-group {
+                gap: 10px;
+            }
+
+            .currency .value {
+                font-size: 0.9rem;
+            }
+
+            main {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .game-view {
+                flex: 0 0 auto;
+                height: 48dvh;
+                min-height: 290px;
+                justify-content: space-evenly;
+                padding: 8px 0;
+            }
+
+            .generator-box {
+                width: 90%;
+                margin-bottom: 0;
+            }
+
+            .skill-check-area {
+                transform: scale(0.75);
+                margin: -30px;
+            }
+
+            .controls-info {
+                margin-top: 0;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 6px 12px;
+                font-size: 0.7rem;
+            }
+
+            .control-hint {
+                width: 100%;
+                text-align: center;
+            }
+
+            .key {
+                min-width: 0;
+            }
+
+            .stats-box {
+                position: static;
+                display: flex;
+                gap: 12px;
+                font-size: 0.7rem;
+            }
+
+            .notice-container {
+                top: 64px;
+            }
+
+            .sidebar {
+                flex: 1;
+                min-height: 0;
+                padding-right: 0;
+            }
+
+            .tab {
+                padding: 10px 6px;
+                font-size: 0.8rem;
+            }
+
+            .upgrade-card {
+                padding: 12px;
+            }
+
+            .skin-opt {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+
+            .save-btn {
+                padding: 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* 画面がとても狭いとき（幅 380px 未満）はタイトルを隠して通貨表示を広げる */
+        @media (max-width: 380px) {
+            header h1 {
+                display: none;
+            }
+
+            .currency-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        /* スマホ横向きなど、高さが低い画面 */
+        @media (max-height: 520px) and (orientation: landscape) {
+            #app {
+                padding: 6px max(6px, env(safe-area-inset-right)) 6px max(6px, env(safe-area-inset-left));
+                gap: 6px;
+            }
+
+            header {
+                padding: 4px 12px;
+            }
+
+            header h1 {
+                display: block;
+                font-size: 1rem;
+            }
+
+            main {
+                flex-direction: row;
+            }
+
+            .game-view {
+                height: auto;
+                min-height: 0;
+                flex: 1.4;
+            }
+
+            .generator-box {
+                margin-bottom: 4px;
+            }
+
+            .skill-check-area {
+                transform: scale(0.6);
+                margin: -48px;
+            }
+
+            .controls-info {
+                display: none;
+            }
+
+            .stats-box {
+                position: absolute;
+                display: block;
+                bottom: 6px;
+                right: 10px;
+            }
+
+            .notice-container {
+                top: 40px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .working .generator-box,
+            .asc-notice,
+            .tra-notice {
+                animation: none;
+            }
+        }
     </style>
 </head>
 
@@ -602,14 +830,14 @@
                     </div>
                 </div>
                 <div class="controls-info">
-                    <div class="control-item"><span class="key">HOLD</span> <span>修理</span></div>
-                    <div class="control-item"><span class="key">RELEASE</span> <span>判定</span></div>
+                    <div class="control-item"><span class="key">長押し</span> <span>修理</span></div>
+                    <div class="control-item"><span class="key">離す</span> <span>判定</span></div>
+                    <div class="control-hint">マウス・タッチ・Spaceキー</div>
                 </div>
-                <div
-                    style="position: absolute; bottom: 20px; right: 20px; text-align: right; color: var(--text-dim); font-size: 0.75rem;">
-                    Speed: <span id="stat-repair-speed">0.00</span>%/s<br>
-                    Gens: <span id="stat-gen-count">0</span><br>
-                    Mult: <span id="stat-multiplier" style="color:var(--accent-tra)">x1.0</span>
+                <div class="stats-box">
+                    <div>Speed: <span id="stat-repair-speed">0.00</span>%/s</div>
+                    <div>Gens: <span id="stat-gen-count">0</span></div>
+                    <div>Mult: <span id="stat-multiplier" style="color:var(--accent-tra)">x1.0</span></div>
                 </div>
             </div>
 
@@ -625,7 +853,7 @@
                 <div class="system-panel">
                     <div class="save-group">
                         <button class="save-btn" onclick="saveGame(true)">SAVE</button>
-                        <button class="save-btn" onclick="loadGame()">LOAD</button>
+                        <button class="save-btn" onclick="loadAndRefresh()">LOAD</button>
                     </div>
                     <div id="status-info"
                         style="font-size: 0.65rem; color: var(--text-dim); text-align: center; margin: 5px 0; border-top: 1px solid rgba(128,128,128,0.1); padding-top: 5px;">
@@ -641,16 +869,29 @@
 
     <div id="notify">SAVED</div>
 
+    <script src="lib/break_infinity.min.js"></script>
     <script>
         const SAVE_FINAL_KEY = 'dbd_evolution_v6_final_stabilized';
         const LEGACY_SAVE_KEY = 'dbd_inc_evolution_ultra_v4';
+        const SAVE_VERSION = 2; // 2: 資源を Decimal（文字列）で保存
         const AUTO_SAVE_INTERVAL = 10000; // ms
         // Great 判定の幅（度）。5°だと 340°/s で約15ms しかなく、ほぼ狙えなかったため広げた
         const CONFIG = { BASE_REPAIR_SPEED: 0.5, BASE_NEEDLE_SPEED: 340, SC_COOLDOWN: 4500, GREAT_WIDTH: 10 };
-        // JS の数値の上限（約1.8e308）を超えると Infinity / NaN になりデータが壊れるため、ここで頭打ちにする
-        const NUM_CAP = 1e300;
+
+        // ===== 大きな数（break_infinity.js の Decimal） =====
+        // BP / IS / AP / TP / 修理数 と各倍率は Decimal で扱い、1e308 を超えても計算できるようにする
+        const DECIMAL_KEYS = ['bp', 'is', 'ap', 'tp', 'genFinished', 'totalGenFinished'];
+        function D(x) { return x instanceof Decimal ? x : new Decimal(x); }
+        // 壊れた値（NaN / Infinity / 変換できない値）は 0 にする
+        function toDec(v) {
+            try {
+                const d = D(v === undefined || v === null || v === '' ? 0 : v);
+                return (Number.isFinite(d.mantissa) && Number.isFinite(d.exponent)) ? d : D(0);
+            } catch (e) { return D(0); }
+        }
 
         const DEFAULT_GAME = {
+            saveVersion: SAVE_VERSION,
             bp: 0, is: 0, ap: 0, tp: 0,
             genFinished: 0, totalGenFinished: 0,
             ascensionLevel: 0, transcendenceLevel: 0,
@@ -673,60 +914,71 @@
             activeSkin: 'default'
         };
 
-        let game = JSON.parse(JSON.stringify(DEFAULT_GAME));
-        let temp = { isRepairing: false, skillCheckActive: false, needleAngle: 0, targetRange: [0, 0], greatRange: [0, 0], activeTab: 'bp', scTimer: null };
-        let lastTime = 0;
-
-        // 安全に数値を取得（NaN対策）
-        function n(val, fallback = 0) { return (typeof val === 'number' && !isNaN(val)) ? val : fallback; }
-
-        // 上限で頭打ちにする（NaN は 0 扱い）
-        function cap(val) { return Number.isNaN(val) ? 0 : Math.min(Math.max(val, -NUM_CAP), NUM_CAP); }
-
-        // リソース類を上限内に収める
-        function clampState() {
-            ['bp', 'is', 'ap', 'tp', 'genFinished', 'totalGenFinished', 'progress'].forEach(k => {
-                const v = game[k];
-                game[k] = (typeof v === 'number') ? cap(v) : 0;
-            });
+        function makeDefaultGame() {
+            const g = JSON.parse(JSON.stringify(DEFAULT_GAME));
+            DECIMAL_KEYS.forEach(k => g[k] = D(0));
+            return g;
         }
 
-        function f(num) {
-            num = n(num);
-            if (!isFinite(num)) return num > 0 ? '∞' : '-∞';
-            if (num < 100000) return Math.floor(num).toLocaleString();
-            return num.toExponential(2).replace('+', '');
+        let game = makeDefaultGame();
+        let temp = { isRepairing: false, skillCheckActive: false, needleAngle: 0, needleStartAngle: 0, needleStartTime: 0, targetRange: [0, 0], greatRange: [0, 0], activeTab: 'bp', scTimer: null, resetting: false };
+        let lastTime = 0;
+
+        // 安全に数値を取得（NaN対策）。レベルなど普通の数値用
+        function n(val, fallback = 0) { return (typeof val === 'number' && Number.isFinite(val)) ? val : fallback; }
+
+        // 整数表示（1e5 以上は指数表記。指数自体が巨大なら e1.23e6 のように表示）
+        function f(x) {
+            const d = toDec(x);
+            if (d.lt(1e5)) return Math.floor(d.toNumber()).toLocaleString();
+            let m = d.mantissa, e = d.exponent;
+            if (Number(m.toFixed(2)) >= 10) { m /= 10; e += 1; } // 丸めで 10.00e5 にならないように
+            if (e < 1e6) return `${m.toFixed(2)}e${e}`;
+            return `e${f(e)}`;
+        }
+        // 小数を含む表示（倍率・速度用）
+        function fx(x, digits = 1) {
+            const d = toDec(x);
+            return d.lt(1e5) ? d.toNumber().toFixed(digits) : f(d);
         }
 
         const DEF = {
             bp: {
-                toolbox: { name: "改良工具箱", desc: "修理速度向上。", cost: (l) => Math.floor(50 * Math.pow(1.5, n(l))), effect: (l) => n(l) * 0.5, format: (v) => `+${v.toFixed(1)}%/s` },
-                precision: { name: "精密技術", desc: "判定拡大 & 針減速。", cost: (l) => Math.floor(100 * Math.pow(1.7, n(l))), effect: (l) => ({ width: n(l) * 8, speed: Math.max(0.4, 1 - n(l) * 0.04) }), format: (v) => `+${v.width}°, x${v.speed.toFixed(2)}`, max: 15 },
-                sc_bonus: { name: "BP収穫", desc: "スキルチェックBP増益。", cost: (l) => Math.floor(80 * Math.pow(1.6, n(l))), effect: (l) => n(l) * 0.5, format: (v) => `x${(1 + v).toFixed(1)}` },
-                sc_frequency: { name: "集中力", desc: "判定発生短縮。", cost: (l) => Math.floor(200 * Math.pow(2, n(l))), effect: (l) => n(l) * 200, format: (v) => `-${(v / 1000).toFixed(1)}s`, max: 16 }
+                toolbox: { name: "改良工具箱", desc: "修理速度向上。", cost: (l) => Decimal.pow(1.5, n(l)).mul(50).floor(), effect: (l) => n(l) * 0.5, format: (v) => `+${fx(v)}%/s` },
+                precision: { name: "精密技術", desc: "判定拡大 & 針減速。", cost: (l) => Decimal.pow(1.7, n(l)).mul(100).floor(), effect: (l) => ({ width: n(l) * 8, speed: Math.max(0.4, 1 - n(l) * 0.04) }), format: (v) => `+${v.width}°, x${v.speed.toFixed(2)}`, max: 15 },
+                sc_bonus: { name: "BP収穫", desc: "スキルチェックBP増益。", cost: (l) => Decimal.pow(1.6, n(l)).mul(80).floor(), effect: (l) => n(l) * 0.5, format: (v) => `x${fx(1 + v)}` },
+                sc_frequency: { name: "集中力", desc: "判定発生短縮。", cost: (l) => Decimal.pow(2, n(l)).mul(200).floor(), effect: (l) => n(l) * 200, format: (v) => `-${(v / 1000).toFixed(1)}s`, max: 16 }
             },
             is: {
-                auto_repair: { name: "自動修理装置", desc: "放置修理。", cost: (l) => Math.floor(1 + n(l) * 2), effect: (l) => n(l) * 0.3, format: (v) => `+${v.toFixed(1)}%/s` },
-                mastery: { name: "超越的な知識", desc: "全獲得倍率上昇。", cost: (l) => Math.floor(5 + n(l) * 5), effect: (l) => Math.pow(1.2, n(l)), format: (v) => `x${v.toFixed(1)}` },
-                shard_refinery: { name: "IS精錬所", desc: "IS獲得量向上。", cost: (l) => Math.floor(10 + n(l) * 10), effect: (l) => 1 + n(l) * 1.0, format: (v) => `x${v.toFixed(1)}` },
-                repair_overdrive: { name: "修理OS強化", desc: "修理速度倍増。", cost: (l) => Math.floor(25 + n(l) * 25), effect: (l) => 1 + n(l) * 0.5, format: (v) => `x${v.toFixed(1)}` },
-                bp_efficiency: { name: "BP循環効率", desc: "BP獲得量向上。", cost: (l) => Math.floor(50 + n(l) * 50), effect: (l) => 1 + n(l) * 0.2, format: (v) => `x${v.toFixed(1)}` }
+                auto_repair: { name: "自動修理装置", desc: "放置修理。", cost: (l) => D(Math.floor(1 + n(l) * 2)), effect: (l) => n(l) * 0.3, format: (v) => `+${fx(v)}%/s` },
+                mastery: { name: "超越的な知識", desc: "全獲得倍率上昇。", cost: (l) => D(Math.floor(5 + n(l) * 5)), effect: (l) => Decimal.pow(1.2, n(l)), format: (v) => `x${fx(v)}` },
+                shard_refinery: { name: "IS精錬所", desc: "IS獲得量向上。", cost: (l) => D(Math.floor(10 + n(l) * 10)), effect: (l) => 1 + n(l) * 1.0, format: (v) => `x${fx(v)}` },
+                repair_overdrive: { name: "修理OS強化", desc: "修理速度倍増。", cost: (l) => D(Math.floor(25 + n(l) * 25)), effect: (l) => 1 + n(l) * 0.5, format: (v) => `x${fx(v)}` },
+                bp_efficiency: { name: "BP循環効率", desc: "BP獲得量向上。", cost: (l) => D(Math.floor(50 + n(l) * 50)), effect: (l) => 1 + n(l) * 0.2, format: (v) => `x${fx(v)}` }
             },
             asc: {
-                ap_gain: { name: "効率的昇華", desc: "AP獲得量増加。", cost: (l) => Math.floor(1 + Math.pow(n(l), 1.5)), effect: (l) => 1 + n(l) * 0.2, format: (v) => `x${v.toFixed(1)}` },
-                auto_check: { name: "自動回避", desc: "失敗時、確率回避。", cost: (l) => Math.floor(3 + n(l) * 3), effect: (l) => Math.min(0.8, n(l) * 0.1), format: (v) => `${(v * 100).toFixed(0)}%`, max: 8 },
-                great_buff: { name: "至高の職人", desc: "Great判定強化。", cost: (l) => Math.floor(5 + n(l) * 5), effect: (l) => 1 + n(l) * 0.5, format: (v) => `x${v.toFixed(1)}` },
-                is_boost: { name: "シャード共鳴", desc: "IS獲得量増加。", cost: (l) => Math.floor(2 + n(l) * 4), effect: (l) => 1 + n(l) * 0.5, format: (v) => `x${v.toFixed(1)}` },
-                needle_stabilizer: { name: "針の安定化", desc: "針の開始位置。", cost: (l) => Math.floor(10 + n(l) * 10), effect: (l) => Math.min(90, n(l) * 15), format: (v) => `+${v}°`, max: 6 },
-                skin_unlock: { name: "外装拡張", desc: "新スキン解放。", cost: (l) => [2, 5, 12, 25, 40, 60, 99][n(l)] || 999, effect: (l) => n(l), format: (v) => `Lv.${v}`, max: 7 },
-                asc_speed_boost: { name: "次元修理", desc: "全修理速度を大幅強化。", cost: (l) => Math.floor(15 + n(l) * 15), effect: (l) => Math.pow(2, n(l)), format: (v) => `x${v.toFixed(0)}` },
-                asc_bp_multiplier: { name: "次元BP倍率", desc: "全BP獲得を大幅強化。", cost: (l) => Math.floor(20 + n(l) * 20), effect: (l) => Math.pow(3, n(l)), format: (v) => `x${v.toFixed(0)}` }
+                ap_gain: { name: "効率的昇華", desc: "AP獲得量増加。", cost: (l) => D(Math.floor(1 + Math.pow(n(l), 1.5))), effect: (l) => 1 + n(l) * 0.2, format: (v) => `x${fx(v)}` },
+                auto_check: { name: "自動回避", desc: "失敗時、確率回避。", cost: (l) => D(Math.floor(3 + n(l) * 3)), effect: (l) => Math.min(0.8, n(l) * 0.1), format: (v) => `${(v * 100).toFixed(0)}%`, max: 8 },
+                great_buff: { name: "至高の職人", desc: "Great判定強化。", cost: (l) => D(Math.floor(5 + n(l) * 5)), effect: (l) => 1 + n(l) * 0.5, format: (v) => `x${fx(v)}` },
+                is_boost: { name: "シャード共鳴", desc: "IS獲得量増加。", cost: (l) => D(Math.floor(2 + n(l) * 4)), effect: (l) => 1 + n(l) * 0.5, format: (v) => `x${fx(v)}` },
+                needle_stabilizer: { name: "針の安定化", desc: "針の開始位置。", cost: (l) => D(Math.floor(10 + n(l) * 10)), effect: (l) => Math.min(90, n(l) * 15), format: (v) => `+${v}°`, max: 6 },
+                skin_unlock: { name: "外装拡張", desc: "新スキン解放。", cost: (l) => D([2, 5, 12, 25, 40, 60, 99][n(l)] || 999), effect: (l) => n(l), format: (v) => `Lv.${v}`, max: 7 },
+                asc_speed_boost: { name: "次元修理", desc: "全修理速度を大幅強化。", cost: (l) => D(Math.floor(15 + n(l) * 15)), effect: (l) => Decimal.pow(2, n(l)), format: (v) => `x${fx(v, 0)}` },
+                asc_bp_multiplier: { name: "次元BP倍率", desc: "全BP獲得を大幅強化。", cost: (l) => D(Math.floor(20 + n(l) * 20)), effect: (l) => Decimal.pow(3, n(l)), format: (v) => `x${fx(v, 0)}` }
             },
             tra: {
-                tra_mult: { name: "魂の渇望", desc: "全リソース獲得倍率強化。", cost: (v) => Math.floor(1 * Math.pow(10, n(v))), effect: (l) => Math.pow(10, n(l)), format: (v) => `x${f(v)}` },
-                tra_speed: { name: "次元の加速", desc: "修理の基礎速度を強化。", cost: (v) => Math.floor(5 * Math.pow(5, n(v))), effect: (l) => n(l) * 1.0, format: (v) => `+${v.toFixed(1)}%/s` },
-                tra_auto_asc: { name: "自動昇華", desc: "条件を満たし次第、自動で昇華。", cost: (v) => 100, effect: (l) => n(l) > 0, format: (v) => v ? "有効" : "無効", max: 1 }
+                tra_mult: { name: "魂の渇望", desc: "全リソース獲得倍率強化。", cost: (l) => Decimal.pow(10, n(l)), effect: (l) => Decimal.pow(10, n(l)), format: (v) => `x${f(v)}` },
+                tra_speed: { name: "次元の加速", desc: "修理の基礎速度を強化。", cost: (l) => Decimal.pow(5, n(l)).mul(5).floor(), effect: (l) => n(l) * 1.0, format: (v) => `+${fx(v)}%/s` },
+                tra_auto_asc: { name: "自動昇華", desc: "条件を満たし次第、自動で昇華。", cost: () => D(100), effect: (l) => n(l) > 0, format: (v) => v ? "有効" : "無効", max: 1 }
             }
+        };
+
+        // タブ（カテゴリ）ごとの保存先と通貨
+        const CAT = {
+            bp: { store: 'upgrades', curr: 'bp' },
+            is: { store: 'upgrades', curr: 'is' },
+            asc: { store: 'ascUpgrades', curr: 'ap' },
+            tra: { store: 'traUpgrades', curr: 'tp' }
         };
 
         const SKINS = {
@@ -741,15 +993,18 @@
         };
 
         function getMultiplier() {
-            return cap(n(DEF.is.mastery.effect(game.upgrades.mastery)) * (1 + n(game.ascensionLevel) * 0.5) * Math.pow(1000, n(game.transcendenceLevel)) * n(DEF.tra.tra_mult.effect(game.traUpgrades.tra_mult), 1));
+            return D(DEF.is.mastery.effect(game.upgrades.mastery))
+                .mul(1 + n(game.ascensionLevel) * 0.5)
+                .mul(Decimal.pow(1000, n(game.transcendenceLevel)))
+                .mul(DEF.tra.tra_mult.effect(game.traUpgrades.tra_mult));
         }
 
         function getBPMultiplier() {
-            return cap(n(DEF.asc.asc_bp_multiplier.effect(game.ascUpgrades.asc_bp_multiplier), 1) * n(DEF.is.bp_efficiency.effect(game.upgrades.bp_efficiency), 1));
+            return D(DEF.asc.asc_bp_multiplier.effect(game.ascUpgrades.asc_bp_multiplier)).mul(DEF.is.bp_efficiency.effect(game.upgrades.bp_efficiency));
         }
 
         function getRepairSpeedMultiplier() {
-            return cap(n(DEF.asc.asc_speed_boost.effect(game.ascUpgrades.asc_speed_boost), 1) * n(DEF.is.repair_overdrive.effect(game.upgrades.repair_overdrive), 1));
+            return D(DEF.asc.asc_speed_boost.effect(game.ascUpgrades.asc_speed_boost)).mul(DEF.is.repair_overdrive.effect(game.upgrades.repair_overdrive));
         }
 
         function getBaseRepairSpeed() {
@@ -757,22 +1012,28 @@
         }
 
         function getISMultiplier() {
-            return cap(n(DEF.is.shard_refinery.effect(game.upgrades.shard_refinery), 1) * n(DEF.asc.is_boost.effect(game.ascUpgrades.is_boost), 1));
+            return D(DEF.is.shard_refinery.effect(game.upgrades.shard_refinery)).mul(DEF.asc.is_boost.effect(game.ascUpgrades.is_boost));
         }
 
+        function getAscReq() { return 5 + n(game.ascensionLevel) * 5; }
+
         function getAPGain(gens = game.genFinished) {
-            return cap(Math.floor(n(gens) / 2 * n(DEF.asc.ap_gain.effect(game.ascUpgrades.ap_gain), 1)));
+            return toDec(gens).div(2).mul(DEF.asc.ap_gain.effect(game.ascUpgrades.ap_gain)).floor();
         }
 
         // AP獲得量が今より増えるまでに必要な修理数（AP倍率を考慮）
         function gensToNextAP() {
-            const g = n(game.genFinished); const m = n(DEF.asc.ap_gain.effect(game.ascUpgrades.ap_gain), 1);
-            const cur = getAPGain(g);
+            if (game.genFinished.gte(1e15)) return 1; // 桁が大きいときは 1 修理ごとに増える
+            const g = game.genFinished.toNumber(); const m = DEF.asc.ap_gain.effect(game.ascUpgrades.ap_gain);
+            const gain = (x) => Math.floor(x / 2 * m);
+            const cur = gain(g);
             let k = Math.max(1, Math.ceil(2 * (cur + 1) / m) - g);
-            while (k > 1 && getAPGain(g + k - 1) > cur) k--;
-            while (getAPGain(g + k) <= cur && k < 1e6) k++;
+            while (k > 1 && gain(g + k - 1) > cur) k--;
+            while (gain(g + k) <= cur && k < 1e6) k++;
             return k;
         }
+
+        function getTPGain() { return Decimal.pow(10, n(game.ascensionLevel) - 10).floor(); }
 
         function init() {
             loadGame();
@@ -784,30 +1045,45 @@
             // 自動セーブ（定期 + 閉じる/裏に回るとき）
             setInterval(() => saveGame(), AUTO_SAVE_INTERVAL);
             window.addEventListener('beforeunload', () => saveGame());
-            document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
+            document.addEventListener('visibilitychange', () => { if (document.hidden) { stopRepair(); saveGame(); } });
 
+            // マウス・タッチ・ペンは Pointer Events でまとめて扱う
             const area = document.getElementById('game-click-area');
-            const start = (e) => {
-                if (e.target.closest('.upgrade-card') || e.target.closest('.sidebar') || e.target.closest('.skin-opt')) return;
-                temp.isRepairing = true;
-                if (temp.scTimer) clearInterval(temp.scTimer);
-                const freq = Math.max(1200, CONFIG.SC_COOLDOWN - DEF.bp.sc_frequency.effect(game.upgrades.sc_frequency));
-                temp.scTimer = setInterval(() => {
-                    if (temp.isRepairing && !temp.skillCheckActive) triggerSkillCheck();
-                }, freq);
-            };
-            const stop = () => { if (temp.isRepairing) { temp.isRepairing = false; if (temp.skillCheckActive) handleSkillCheck(); clearInterval(temp.scTimer); } };
+            area.addEventListener('pointerdown', (e) => {
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                e.preventDefault(); // タッチ時のスクロール・ズーム・長押しメニューを防ぐ
+                startRepair();
+            });
+            window.addEventListener('pointerup', stopRepair);
+            window.addEventListener('pointercancel', stopRepair);
+            window.addEventListener('blur', stopRepair);
+            area.addEventListener('contextmenu', (e) => e.preventDefault());
 
-            area.addEventListener('mousedown', start);
-            window.addEventListener('mouseup', stop);
             // Space はフォーカス中のボタン（LOAD・リセットなど）を押さないよう、押下・離上とも既定動作を止める
             window.addEventListener('keydown', (e) => {
                 if (e.code !== 'Space') return;
                 e.preventDefault();
                 if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
-                if (!e.repeat) start(e);
+                if (!e.repeat) startRepair();
             });
-            window.addEventListener('keyup', (e) => { if (e.code === 'Space') { e.preventDefault(); stop(); } });
+            window.addEventListener('keyup', (e) => { if (e.code === 'Space') { e.preventDefault(); stopRepair(); } });
+        }
+
+        function startRepair() {
+            if (temp.isRepairing) return;
+            temp.isRepairing = true;
+            if (temp.scTimer) clearInterval(temp.scTimer);
+            const freq = Math.max(1200, CONFIG.SC_COOLDOWN - DEF.bp.sc_frequency.effect(game.upgrades.sc_frequency));
+            temp.scTimer = setInterval(() => {
+                if (temp.isRepairing && !temp.skillCheckActive) triggerSkillCheck();
+            }, freq);
+        }
+
+        function stopRepair() {
+            if (!temp.isRepairing) return;
+            temp.isRepairing = false;
+            if (temp.skillCheckActive) handleSkillCheck();
+            clearInterval(temp.scTimer);
         }
 
         // スキルチェック開始からの経過時間で針の角度を求める（フレームの粗さに左右されない）
@@ -845,25 +1121,44 @@
             if (!temp.skillCheckActive) return;
             const angle = currentNeedleAngle(); const mult = getMultiplier();
             const bpBonus = 1 + n(DEF.bp.sc_bonus.effect(game.upgrades.sc_bonus));
-            const gMult = n(DEF.asc.great_buff.effect(game.ascUpgrades.great_buff));
+            const gMult = n(DEF.asc.great_buff.effect(game.ascUpgrades.great_buff), 1);
+            temp.skillCheckActive = false;
 
             if (angle >= temp.greatRange[0] && angle <= temp.greatRange[1]) {
-                game.progress += 25 * mult * gMult * getRepairSpeedMultiplier();
-                game.bp += 1000 * mult * bpBonus * gMult * getBPMultiplier();
+                game.bp = game.bp.add(D(1000).mul(mult).mul(bpBonus * gMult).mul(getBPMultiplier()));
+                addProgress(D(25).mul(mult).mul(gMult).mul(getRepairSpeedMultiplier()));
                 notify("GREAT!");
             } else if (angle >= temp.targetRange[0] && angle <= temp.targetRange[1]) {
-                game.progress += 4 * mult * getRepairSpeedMultiplier();
-                game.bp += 60 * mult * bpBonus * getBPMultiplier();
+                game.bp = game.bp.add(D(60).mul(mult).mul(bpBonus).mul(getBPMultiplier()));
+                addProgress(D(4).mul(mult).mul(getRepairSpeedMultiplier()));
                 notify("GOOD");
             } else {
                 if (Math.random() < DEF.asc.auto_check.effect(game.ascUpgrades.auto_check)) notify("EVADED!");
                 else game.progress = Math.max(0, game.progress - 15);
             }
-            clampState();
-            temp.skillCheckActive = false;
             document.getElementById('needle').style.display = 'none';
             document.getElementById('target-zone').style.background = document.getElementById('great-zone').style.background = 'none';
             updateUI();
+        }
+
+        // 修理進捗を加算し、100% を超えた分だけ発電機を完成させる
+        function addProgress(amount) {
+            const total = D(game.progress).add(amount);
+            if (total.lt(100)) { game.progress = Math.max(0, total.toNumber()); return; }
+            const c = total.div(100).floor();
+            // 桁が大きすぎると端数に意味がないので 0 にする
+            game.progress = total.lt(1e15) ? total.toNumber() % 100 : 0;
+            completeGenerators(c);
+        }
+
+        function completeGenerators(c) {
+            game.genFinished = game.genFinished.add(c);
+            game.totalGenFinished = game.totalGenFinished.add(c);
+            game.is = game.is.add(D(c).mul(getMultiplier()).mul(getISMultiplier()));
+            updateUI();
+
+            // 自動昇華チェック
+            if (DEF.tra.tra_auto_asc.effect(game.traUpgrades.tra_auto_asc) && game.genFinished.gte(getAscReq())) doAscension();
         }
 
         function gameLoop(timestamp) {
@@ -872,18 +1167,19 @@
             lastTime = timestamp;
             if (dt > 0.5) dt = 0; // スパイク用
 
-            let speed = 0; const mult = getMultiplier();
+            let speed = 0;
             if (temp.isRepairing) {
-                speed += (getBaseRepairSpeed() + n(DEF.bp.toolbox.effect(game.upgrades.toolbox)));
-                document.getElementById('app-body').classList.add('working');
-            } else { document.getElementById('app-body').classList.remove('working'); }
+                speed += getBaseRepairSpeed() + n(DEF.bp.toolbox.effect(game.upgrades.toolbox));
+                document.body.classList.add('working');
+            } else { document.body.classList.remove('working'); }
             speed += n(DEF.is.auto_repair.effect(game.upgrades.auto_repair));
-            speed *= getRepairSpeedMultiplier();
 
+            const speedEl = document.getElementById('stat-repair-speed');
             if (speed > 0) {
-                game.progress += speed * mult * dt;
-                document.getElementById('stat-repair-speed').textContent = f(speed * mult);
-            } else document.getElementById('stat-repair-speed').textContent = "0.00";
+                const realSpeed = D(speed).mul(getRepairSpeedMultiplier()).mul(getMultiplier());
+                speedEl.textContent = fx(realSpeed, 2);
+                if (dt > 0) addProgress(realSpeed.mul(dt));
+            } else speedEl.textContent = "0.00";
 
             if (temp.skillCheckActive) {
                 temp.needleAngle = currentNeedleAngle();
@@ -891,20 +1187,6 @@
                 if (temp.needleAngle > 360) handleSkillCheck();
             }
 
-            clampState();
-            if (game.progress >= 100) {
-                const c = Math.floor(game.progress / 100); game.progress %= 100;
-                game.genFinished += c; game.totalGenFinished += c;
-                game.is += c * mult * getISMultiplier();
-                clampState();
-                updateUI();
-
-                // 自動昇華チェック
-                if (DEF.tra.tra_auto_asc.effect(game.traUpgrades.tra_auto_asc)) {
-                    const req = 5 + n(game.ascensionLevel) * 5;
-                    if (game.genFinished >= req) doAscension();
-                }
-            }
             document.getElementById('progress-bar').style.width = `${game.progress.toFixed(2)}%`;
             document.getElementById('progress-text').textContent = `${game.progress.toFixed(2)}%`;
 
@@ -913,123 +1195,95 @@
 
         function switchTab(t) { temp.activeTab = t; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.classList.contains(t + '-tab'))); renderUpgrades(); }
 
+        // アップグレードカード 1 枚分の HTML
+        function upgradeCardHTML(cat, id) {
+            const def = DEF[cat][id]; const { store, curr } = CAT[cat];
+            const lv = n(game[store][id]);
+            const isMax = !!def.max && lv >= def.max;
+            const cost = isMax ? D(0) : D(def.cost(lv));
+            const canBuy = !isMax && game[curr].gte(cost);
+            return `<div class="upgrade-card ${canBuy ? '' : 'disabled'}" data-cost="${cost.toString()}" data-currency="${curr}" ${isMax ? 'data-max="true"' : ''} onclick="buyUpgrade('${cat}','${id}')">
+                <div class="upgrade-header"><span class="upgrade-name">${def.name}</span><span class="upgrade-level">${isMax ? 'MAX' : 'Lv.' + lv}</span></div>
+                <div class="upgrade-desc">${def.desc}</div>
+                <div class="upgrade-effect">現在: ${def.format(def.effect(lv))} ${isMax ? '' : '<span style="opacity:0.4">→</span> 次: ' + def.format(def.effect(lv + 1))}</div>
+                <div class="upgrade-footer"><span class="cost-label cost-${curr}">${isMax ? 'MAX' : f(cost) + ' ' + curr.toUpperCase()}</span></div></div>`;
+        }
+
+        function buyUpgrade(cat, id) {
+            const def = DEF[cat][id]; const { store, curr } = CAT[cat];
+            const lv = n(game[store][id]);
+            if (def.max && lv >= def.max) return;
+            const cost = D(def.cost(lv));
+            if (!game[curr].gte(cost)) return;
+            game[curr] = game[curr].sub(cost);
+            game[store][id] = lv + 1;
+            renderUpgrades(); updateUI(); saveGame();
+        }
+
         function renderUpgrades() {
-            const container = document.getElementById('upgrade-container'); container.innerHTML = '';
-            if (temp.activeTab === 'asc') { renderSpecial(); return; }
-            if (temp.activeTab === 'tra') { renderTraUpgrades(); return; }
-            const cat = DEF[temp.activeTab];
-            Object.keys(cat).forEach(id => {
-                const def = cat[id]; const lv = n(game.upgrades[id]);
-                const isMax = def.max && lv >= def.max;
-                const cost = isMax ? 0 : def.cost(lv);
-                const curr = temp.activeTab === 'bp' ? 'bp' : 'is';
-                const card = document.createElement('div');
-                card.className = `upgrade-card ${isMax || game[curr] < cost ? 'disabled' : ''}`;
-                card.setAttribute('data-cost', cost);
-                card.setAttribute('data-currency', curr);
-                if (isMax) card.setAttribute('data-max', 'true');
-                card.innerHTML = `
-                    <div class="upgrade-header"><span class="upgrade-name">${def.name}</span><span class="upgrade-level">${isMax ? 'MAX' : 'Lv.' + lv}</span></div>
-                    <div class="upgrade-desc">${def.desc}</div>
-                    <div class="upgrade-effect">現在: ${def.format(def.effect(lv))} ${isMax ? '' : '<span style="opacity:0.4">→</span> 次: ' + def.format(def.effect(lv + 1))}</div>
-                    <div class="upgrade-footer"><span class="cost-label cost-${curr}">${isMax ? 'MAX' : f(cost) + ' ' + curr.toUpperCase()}</span></div>`;
-                card.onclick = () => { if (!isMax && game[curr] >= cost) { game[curr] -= cost; game.upgrades[id]++; renderUpgrades(); updateUI(); saveGame(); } };
-                container.appendChild(card);
-            });
+            const container = document.getElementById('upgrade-container');
+            const cat = temp.activeTab;
+            let html = '';
+            if (cat === 'asc') html += ascensionHeaderHTML();
+            if (cat === 'tra') html += transcendenceHeaderHTML();
+            html += Object.keys(DEF[cat]).map(id => upgradeCardHTML(cat, id)).join('');
+            container.innerHTML = html;
         }
 
-        function renderSpecial() {
-            const container = document.getElementById('upgrade-container'); container.innerHTML = '';
-            if (temp.activeTab === 'asc') {
-                const req = 5 + n(game.ascensionLevel) * 5;
-                const gain = getAPGain();
-                const nextGen = gensToNextAP();
-                let html = `<div class="upgrade-card ${game.genFinished >= req ? '' : 'disabled'}" data-req-gen="${req}" style="border: 1px solid var(--accent-asc); background: rgba(128,0,128,0.05);">
-                    <h3 style="color: var(--accent-asc); margin-bottom: 3px; font-size:0.9rem;">昇華 (Ascension)</h3>
-                    <p style="font-size: 0.7rem; margin-bottom: 4px;">獲得可能: <strong style="color:var(--accent-asc)" id="asc-gain-val">+${f(gain)} AP</strong></p>
-                    <p style="font-size: 0.6rem; color: var(--text-dim); margin-bottom: 8px;" id="asc-next-ap-val">(あと ${f(nextGen)} 修理完了で AP増加)</p>
-                    <button class="save-btn" style="background: var(--accent-asc); color: #000; font-weight: bold; width: 100%; border:none; padding: 6px; border-radius: 4px;" onclick="doAscension()">昇華を実行</button></div>`;
+        function ascensionHeaderHTML() {
+            const req = getAscReq();
+            let html = `<div class="upgrade-card ${game.genFinished.gte(req) ? '' : 'disabled'}" data-req-gen="${req}" style="border: 1px solid var(--accent-asc); background: rgba(128,0,128,0.05);">
+                <h3 style="color: var(--accent-asc); margin-bottom: 3px; font-size:0.9rem;">昇華 (Ascension)</h3>
+                <p style="font-size: 0.7rem; margin-bottom: 4px;">獲得可能: <strong style="color:var(--accent-asc)" id="asc-gain-val">+${f(getAPGain())} AP</strong></p>
+                <p style="font-size: 0.6rem; color: var(--text-dim); margin-bottom: 8px;" id="asc-next-ap-val">(あと ${f(gensToNextAP())} 修理完了で AP増加)</p>
+                <button class="save-btn action-btn" style="background: var(--accent-asc);" onclick="doAscension()">昇華を実行</button></div>`;
 
-                if (n(game.ascUpgrades.skin_unlock) > 0) {
-                    html += `<div style="font-size:0.6rem; color:var(--text-dim); margin-top:10px; font-weight:bold;">外装カスタマイズ</div><div class="skin-selector">`;
-                    Object.keys(SKINS).forEach(id => html += `<div class="skin-opt ${SKINS[id].unlocked() ? '' : 'locked'} ${game.activeSkin === id ? 'active' : ''}" onclick="applySkin('${id}')">${SKINS[id].name}</div>`);
-                    html += `</div>`;
-                }
-
-                html += `<div style="margin-top:12px; border-top: 1px solid rgba(128,128,128,0.2); padding-top:8px; font-size:0.7rem; color:var(--accent-asc); font-weight:bold; margin-bottom:5px;">AP永続アップグレード</div>`;
-                Object.keys(DEF.asc).forEach(id => {
-                    const def = DEF.asc[id]; const lv = n(game.ascUpgrades[id]);
-                    const isMax = def.max && lv >= def.max;
-                    const cost = isMax ? 0 : def.cost(lv);
-                    html += `<div class="upgrade-card ${isMax || game.ap < cost ? 'disabled' : ''}" data-cost="${cost}" data-currency="ap" ${isMax ? 'data-max="true"' : ''} onclick="buyAscUpgrade('${id}')">
-                        <div class="upgrade-header"><span class="upgrade-name">${def.name}</span><span class="upgrade-level">${isMax ? 'MAX' : 'Lv.' + lv}</span></div>
-                        <div class="upgrade-desc">${def.desc}</div>
-                        <div class="upgrade-effect">現在: ${def.format(def.effect(lv))} ${isMax ? '' : '<span style="opacity:0.4">→</span> 次: ' + def.format(def.effect(lv + 1))}</div>
-                        <div class="upgrade-footer"><span class="cost-label cost-ap">${isMax ? 'MAX' : f(cost) + ' AP'}</span></div></div>`;
-                });
-                container.innerHTML = html;
+            if (n(game.ascUpgrades.skin_unlock) > 0) {
+                html += `<div style="font-size:0.6rem; color:var(--text-dim); margin-top:10px; font-weight:bold;">外装カスタマイズ</div><div class="skin-selector">`;
+                Object.keys(SKINS).forEach(id => html += `<div class="skin-opt ${SKINS[id].unlocked() ? '' : 'locked'} ${game.activeSkin === id ? 'active' : ''}" onclick="applySkin('${id}')">${SKINS[id].name}</div>`);
+                html += `</div>`;
             }
+
+            html += `<div style="margin-top:12px; border-top: 1px solid rgba(128,128,128,0.2); padding-top:8px; font-size:0.7rem; color:var(--accent-asc); font-weight:bold; margin-bottom:5px;">AP永続アップグレード</div>`;
+            return html;
         }
 
-        function renderTraUpgrades() {
-            const container = document.getElementById('upgrade-container'); container.innerHTML = '';
+        function transcendenceHeaderHTML() {
             const canTra = n(game.ascensionLevel) >= 10;
-            const gainTP = Math.floor(Math.pow(10, n(game.ascensionLevel) - 10));
-
-            let html = `<div style="margin-top:5px; border-bottom: 1px solid var(--accent-tra); padding-bottom:8px; font-size:0.8rem; color:var(--accent-tra); font-weight:bold; margin-bottom:10px;">超越 (Transcendence)</div>`;
-
-            // 超越実行カード
-            html += `<div class="upgrade-card ${canTra ? '' : 'disabled'}" style="border: 2px solid var(--accent-tra); background: rgba(255,255,0,0.05); margin-bottom:15px;">
+            return `<div style="margin-top:5px; border-bottom: 1px solid var(--accent-tra); padding-bottom:8px; font-size:0.8rem; color:var(--accent-tra); font-weight:bold; margin-bottom:10px;">超越 (Transcendence)</div>
+                <div class="upgrade-card ${canTra ? '' : 'disabled'}" data-req-asc="10" style="border: 2px solid var(--accent-tra); background: rgba(255,255,0,0.05); margin-bottom:15px;">
                 <h3 style="color: var(--accent-tra); margin-bottom: 5px; font-size:0.9rem;">世界の超越</h3>
                 <p style="font-size: 0.7rem; line-height: 1.4; margin-bottom: 8px;">APアップグレードを含む全てを捧げ、TPを獲得します。<br>
-                獲得可能: <strong style="color:var(--accent-tra)">+${f(gainTP)} TP</strong></p>
+                獲得可能: <strong style="color:var(--accent-tra)">+${f(getTPGain())} TP</strong></p>
                 <p style="font-size: 0.6rem; color: var(--text-dim); margin-bottom: 8px;">初期条件: 昇華Lv.10 到達 (現在: Lv.${game.ascensionLevel})</p>
-                <button class="save-btn" style="background: var(--accent-tra); color: #000; font-weight: bold; width: 100%; border:none; padding: 10px; border-radius: 4px;" onclick="doTranscendence()">超越を実行</button>
-            </div>`;
-
-            html += `<div style="font-size:0.7rem; color:var(--accent-tra); font-weight:bold; margin-bottom:8px;">TP永続アップグレード</div>`;
-            container.innerHTML = html;
-
-            Object.keys(DEF.tra).forEach(id => {
-                const def = DEF.tra[id];
-                const lv = n(game.traUpgrades[id]);
-                const isMax = def.max && lv >= def.max;
-                const cost = isMax ? 0 : def.cost(lv);
-                const card = document.createElement('div');
-                card.className = `upgrade-card ${isMax || game.tp < cost ? 'disabled' : ''}`;
-                card.setAttribute('data-cost', cost);
-                card.setAttribute('data-currency', 'tp');
-                if (isMax) card.setAttribute('data-max', 'true');
-                card.innerHTML = `
-                    <div class="upgrade-header" style="color:var(--accent-tra)"><span class="upgrade-name">${def.name}</span><span class="upgrade-level">${isMax ? 'MAX' : 'Lv.' + lv}</span></div>
-                    <div class="upgrade-desc">${def.desc}</div>
-                    <div class="upgrade-effect">現在: ${def.format(def.effect(lv))} ${isMax ? '' : '<span style="opacity:0.4">→</span> 次: ' + def.format(def.effect(lv + 1))}</div>
-                    <div class="upgrade-footer"><span class="cost-label" style="color:var(--accent-tra)">${isMax ? 'MAX' : f(cost) + ' TP'}</span></div>`;
-                card.onclick = () => { if (!isMax && game.tp >= cost) { game.tp -= cost; game.traUpgrades[id]++; renderTraUpgrades(); updateUI(); saveGame(); } };
-                container.appendChild(card);
-            });
+                <button class="save-btn action-btn" style="background: var(--accent-tra); padding: 10px;" onclick="doTranscendence()">超越を実行</button>
+            </div>
+            <div style="font-size:0.7rem; color:var(--accent-tra); font-weight:bold; margin-bottom:8px;">TP永続アップグレード</div>`;
         }
 
-        function buyAscUpgrade(id) {
-            const def = DEF.asc[id];
-            const lv = n(game.ascUpgrades[id]);
-            if (def.max && lv >= def.max) return;
-            const cost = def.cost(lv);
-            if (game.ap >= cost) { game.ap -= cost; game.ascUpgrades[id]++; renderSpecial(); updateUI(); saveGame(); }
-        }
         function applySkin(id, silent = false) {
             if (!SKINS[id] || !SKINS[id].unlocked()) id = 'default';
             game.activeSkin = id; document.body.className = SKINS[id].class;
-            if (temp.activeTab === 'asc') renderSpecial();
+            if (temp.activeTab === 'asc') renderUpgrades();
             if (!silent) saveGame();
         }
-        function doAscension() { if (game.genFinished < (5 + n(game.ascensionLevel) * 5)) return; game.ascensionLevel++; game.ap = cap(game.ap + getAPGain()); game.bp = game.is = game.genFinished = game.progress = 0; Object.keys(game.upgrades).forEach(k => game.upgrades[k] = 0); saveGame(); updateUI(); switchTab('bp'); }
+
+        function doAscension() {
+            if (!game.genFinished.gte(getAscReq())) return;
+            game.ap = game.ap.add(getAPGain());
+            game.ascensionLevel++;
+            game.bp = D(0); game.is = D(0); game.genFinished = D(0); game.progress = 0;
+            Object.keys(game.upgrades).forEach(k => game.upgrades[k] = 0);
+            saveGame(); updateUI(); switchTab('bp');
+        }
+
         function doTranscendence() {
             if (n(game.ascensionLevel) < 10) return;
-            const gainTP = Math.floor(Math.pow(10, n(game.ascensionLevel) - 10));
+            const gainTP = getTPGain();
             game.transcendenceLevel++;
-            game.tp = cap(game.tp + gainTP);
-            game.bp = game.is = game.ap = game.genFinished = game.ascensionLevel = game.progress = 0;
+            game.tp = game.tp.add(gainTP);
+            game.bp = D(0); game.is = D(0); game.ap = D(0); game.genFinished = D(0);
+            game.ascensionLevel = 0; game.progress = 0;
             Object.keys(game.upgrades).forEach(k => game.upgrades[k] = 0);
             Object.keys(game.ascUpgrades).forEach(k => game.ascUpgrades[k] = 0);
             applySkin(game.activeSkin, true); // 解放が外れたスキンは Classic に戻る
@@ -1045,33 +1299,28 @@
             document.getElementById('ap-display').textContent = f(game.ap);
             document.getElementById('tp-display').textContent = f(game.tp);
             document.getElementById('stat-gen-count').textContent = f(game.genFinished);
-            document.getElementById('stat-multiplier').textContent = `x${f(getMultiplier())}`;
+            document.getElementById('stat-multiplier').textContent = `x${fx(getMultiplier())}`;
 
-            const req = 5 + n(game.ascensionLevel) * 5;
-            document.getElementById('asc-notice').style.display = (game.genFinished >= req) ? 'block' : 'none';
+            const req = getAscReq();
+            document.getElementById('asc-notice').style.display = game.genFinished.gte(req) ? 'block' : 'none';
             document.getElementById('tra-notice').style.display = (n(game.ascensionLevel) >= 10) ? 'block' : 'none';
 
             const nextInfo = document.getElementById('next-asc-info');
-            if (nextInfo) nextInfo.textContent = `次回の昇華まで: ${Math.max(0, req - game.genFinished)} 修理`;
+            if (nextInfo) nextInfo.textContent = `次回の昇華まで: ${f(Decimal.max(0, D(req).sub(game.genFinished)))} 修理`;
             const totalInfo = document.getElementById('total-asc-info');
             if (totalInfo) totalInfo.textContent = `累計昇華Lv: ${game.ascensionLevel}`;
 
             // 昇華タブ内の詳細表示を更新（タブが開いている場合のみ）
             if (temp.activeTab === 'asc') {
                 const gainVal = document.getElementById('asc-gain-val');
+                if (gainVal) gainVal.textContent = `+${f(getAPGain())} AP`;
                 const nextApVal = document.getElementById('asc-next-ap-val');
-                if (gainVal) {
-                    const gain = getAPGain();
-                    gainVal.textContent = `+${f(gain)} AP`;
-                }
-                if (nextApVal) {
-                    nextApVal.textContent = `(あと ${f(gensToNextAP())} 修理完了で AP増加)`;
-                }
+                if (nextApVal) nextApVal.textContent = `(あと ${f(gensToNextAP())} 修理完了で AP増加)`;
             }
 
             const traTab = document.getElementById('tab-tra-btn');
             if (traTab) {
-                const shouldShow = (n(game.ascensionLevel) >= 5 || n(game.tp) > 0);
+                const shouldShow = (n(game.ascensionLevel) >= 5 || game.tp.gt(0));
                 traTab.style.display = shouldShow ? 'block' : 'none';
                 if (!shouldShow && temp.activeTab === 'tra') switchTab('bp');
             }
@@ -1087,60 +1336,73 @@
                 const isMax = card.getAttribute('data-max') === 'true';
 
                 let canAfford = !isMax;
-                if (canAfford && cost !== null && curr !== null) {
-                    canAfford = game[curr] >= parseFloat(cost);
-                }
-                if (canAfford && reqGen !== null) {
-                    canAfford = game.genFinished >= parseInt(reqGen);
-                }
-                if (canAfford && reqAsc !== null) {
-                    canAfford = n(game.ascensionLevel) >= parseInt(reqAsc);
-                }
+                if (canAfford && cost !== null && curr !== null) canAfford = game[curr].gte(toDec(cost));
+                if (canAfford && reqGen !== null) canAfford = game.genFinished.gte(toDec(reqGen));
+                if (canAfford && reqAsc !== null) canAfford = n(game.ascensionLevel) >= parseInt(reqAsc);
 
-                if (canAfford) card.classList.remove('disabled');
-                else card.classList.add('disabled');
+                card.classList.toggle('disabled', !canAfford);
             });
+        }
+
+        // 読み込んだデータの型を整える（Decimal 化・壊れた値の除去）
+        function sanitizeState() {
+            DECIMAL_KEYS.forEach(k => game[k] = toDec(game[k]));
+            game.progress = Math.min(100, Math.max(0, n(game.progress)));
+            game.ascensionLevel = n(game.ascensionLevel);
+            game.transcendenceLevel = n(game.transcendenceLevel);
+            ['upgrades', 'ascUpgrades', 'traUpgrades'].forEach(s => Object.keys(game[s]).forEach(k => game[s][k] = n(game[s][k])));
+            game.saveVersion = SAVE_VERSION;
         }
 
         // showNotify は SAVE ボタンを押したときだけ true（自動セーブや購入時は通知しない）
         function saveGame(showNotify = false) {
             if (temp.resetting) return;
             try {
-                clampState();
-                localStorage.setItem(SAVE_FINAL_KEY, JSON.stringify(game));
+                localStorage.setItem(SAVE_FINAL_KEY, JSON.stringify(game)); // Decimal は文字列として保存される
                 if (showNotify) notify("SAVED");
             } catch (err) {
                 console.error('セーブに失敗しました', err);
                 if (showNotify) notify("SAVE FAILED");
             }
         }
+
         function loadGame() {
             let d = null;
             try { d = localStorage.getItem(SAVE_FINAL_KEY) || localStorage.getItem(LEGACY_SAVE_KEY); } catch (err) { console.error(err); }
-            if (d) {
-                let p;
-                try {
-                    p = JSON.parse(d);
-                    if (!p || typeof p !== 'object') throw new Error('invalid save');
-                } catch (err) {
-                    // 壊れたデータは別キーに退避して、初期状態で起動する
-                    console.error('セーブデータを読み込めませんでした', err);
-                    try { localStorage.setItem(SAVE_FINAL_KEY + '_corrupted', d); } catch (e2) { }
-                    game = JSON.parse(JSON.stringify(DEFAULT_GAME));
-                    setTimeout(() => notify("セーブデータ破損: 初期化しました"), 0);
-                    return;
-                }
-                // ディープマージ
-                Object.keys(DEFAULT_GAME).forEach(k => {
-                    if (DEFAULT_GAME[k] !== null && typeof DEFAULT_GAME[k] === 'object') {
-                        game[k] = { ...DEFAULT_GAME[k], ...(p[k] || {}) };
-                    } else {
-                        game[k] = p[k] !== undefined ? p[k] : DEFAULT_GAME[k];
-                    }
-                });
-                clampState();
+            game = makeDefaultGame();
+            if (!d) return;
+            let p;
+            try {
+                p = JSON.parse(d);
+                if (!p || typeof p !== 'object') throw new Error('invalid save');
+            } catch (err) {
+                // 壊れたデータは別キーに退避して、初期状態で起動する
+                console.error('セーブデータを読み込めませんでした', err);
+                try { localStorage.setItem(SAVE_FINAL_KEY + '_corrupted', d); } catch (e2) { }
+                setTimeout(() => notify("セーブデータ破損: 初期化しました"), 0);
+                return;
             }
+            // ディープマージ
+            Object.keys(DEFAULT_GAME).forEach(k => {
+                if (DEFAULT_GAME[k] !== null && typeof DEFAULT_GAME[k] === 'object') {
+                    game[k] = { ...DEFAULT_GAME[k], ...(p[k] || {}) };
+                } else if (p[k] !== undefined) {
+                    game[k] = p[k];
+                }
+            });
+            sanitizeState();
         }
+
+        // LOAD ボタン: 最後のセーブに戻して画面を作り直す
+        function loadAndRefresh() {
+            stopRepair();
+            loadGame();
+            applySkin(game.activeSkin || 'default', true);
+            renderUpgrades();
+            updateUI();
+            notify("LOADED");
+        }
+
         function fullResetInternal() {
             if (confirm("全てのデータを完全に削除し、初期状態に戻しますか？（元に戻せません）")) {
                 // このゲームのキーだけ消す（同じドメインの他サイトのデータは残す）
@@ -1149,7 +1411,12 @@
                 location.reload();
             }
         }
-        function notify(m) { const e = document.getElementById('notify'); e.textContent = m; e.style.opacity = 1; setTimeout(() => e.style.opacity = 0, 1500); }
+
+        let notifyTimer = null;
+        function notify(m) {
+            const e = document.getElementById('notify'); e.textContent = m; e.style.opacity = 1;
+            clearTimeout(notifyTimer); notifyTimer = setTimeout(() => e.style.opacity = 0, 1500);
+        }
 
         init();
     </script>
