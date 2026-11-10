@@ -624,7 +624,7 @@
                 <div id="upgrade-container"></div>
                 <div class="system-panel">
                     <div class="save-group">
-                        <button class="save-btn" onclick="saveGame()">SAVE</button>
+                        <button class="save-btn" onclick="saveGame(true)">SAVE</button>
                         <button class="save-btn" onclick="loadGame()">LOAD</button>
                     </div>
                     <div id="status-info"
@@ -643,7 +643,12 @@
 
     <script>
         const SAVE_FINAL_KEY = 'dbd_evolution_v6_final_stabilized';
-        const CONFIG = { BASE_REPAIR_SPEED: 0.5, BASE_NEEDLE_SPEED: 340, SC_COOLDOWN: 4500 };
+        const LEGACY_SAVE_KEY = 'dbd_inc_evolution_ultra_v4';
+        const AUTO_SAVE_INTERVAL = 10000; // ms
+        // Great 判定の幅（度）。5°だと 340°/s で約15ms しかなく、ほぼ狙えなかったため広げた
+        const CONFIG = { BASE_REPAIR_SPEED: 0.5, BASE_NEEDLE_SPEED: 340, SC_COOLDOWN: 4500, GREAT_WIDTH: 10 };
+        // JS の数値の上限（約1.8e308）を超えると Infinity / NaN になりデータが壊れるため、ここで頭打ちにする
+        const NUM_CAP = 1e300;
 
         const DEFAULT_GAME = {
             bp: 0, is: 0, ap: 0, tp: 0,
@@ -675,8 +680,20 @@
         // 安全に数値を取得（NaN対策）
         function n(val, fallback = 0) { return (typeof val === 'number' && !isNaN(val)) ? val : fallback; }
 
+        // 上限で頭打ちにする（NaN は 0 扱い）
+        function cap(val) { return Number.isNaN(val) ? 0 : Math.min(Math.max(val, -NUM_CAP), NUM_CAP); }
+
+        // リソース類を上限内に収める
+        function clampState() {
+            ['bp', 'is', 'ap', 'tp', 'genFinished', 'totalGenFinished', 'progress'].forEach(k => {
+                const v = game[k];
+                game[k] = (typeof v === 'number') ? cap(v) : 0;
+            });
+        }
+
         function f(num) {
             num = n(num);
+            if (!isFinite(num)) return num > 0 ? '∞' : '-∞';
             if (num < 100000) return Math.floor(num).toLocaleString();
             return num.toExponential(2).replace('+', '');
         }
@@ -690,10 +707,10 @@
             },
             is: {
                 auto_repair: { name: "自動修理装置", desc: "放置修理。", cost: (l) => Math.floor(1 + n(l) * 2), effect: (l) => n(l) * 0.3, format: (v) => `+${v.toFixed(1)}%/s` },
-                mastery: { name: "超越的な知識", desc: "価格割引 & 倍率上昇。", cost: (l) => Math.floor(5 + n(l) * 5), effect: (l) => Math.pow(1.2, n(l)), format: (v) => `x${v.toFixed(1)}` },
+                mastery: { name: "超越的な知識", desc: "全獲得倍率上昇。", cost: (l) => Math.floor(5 + n(l) * 5), effect: (l) => Math.pow(1.2, n(l)), format: (v) => `x${v.toFixed(1)}` },
                 shard_refinery: { name: "IS精錬所", desc: "IS獲得量向上。", cost: (l) => Math.floor(10 + n(l) * 10), effect: (l) => 1 + n(l) * 1.0, format: (v) => `x${v.toFixed(1)}` },
                 repair_overdrive: { name: "修理OS強化", desc: "修理速度倍増。", cost: (l) => Math.floor(25 + n(l) * 25), effect: (l) => 1 + n(l) * 0.5, format: (v) => `x${v.toFixed(1)}` },
-                bp_efficiency: { name: "BP循環効率", desc: "BP獲得にIS倍率を適用。", cost: (l) => Math.floor(50 + n(l) * 50), effect: (l) => 1 + n(l) * 0.2, format: (v) => `x${v.toFixed(1)}` }
+                bp_efficiency: { name: "BP循環効率", desc: "BP獲得量向上。", cost: (l) => Math.floor(50 + n(l) * 50), effect: (l) => 1 + n(l) * 0.2, format: (v) => `x${v.toFixed(1)}` }
             },
             asc: {
                 ap_gain: { name: "効率的昇華", desc: "AP獲得量増加。", cost: (l) => Math.floor(1 + Math.pow(n(l), 1.5)), effect: (l) => 1 + n(l) * 0.2, format: (v) => `x${v.toFixed(1)}` },
@@ -724,15 +741,15 @@
         };
 
         function getMultiplier() {
-            return n(DEF.is.mastery.effect(game.upgrades.mastery)) * (1 + n(game.ascensionLevel) * 0.5) * Math.pow(1000, n(game.transcendenceLevel)) * n(DEF.tra.tra_mult.effect(game.traUpgrades.tra_mult), 1);
+            return cap(n(DEF.is.mastery.effect(game.upgrades.mastery)) * (1 + n(game.ascensionLevel) * 0.5) * Math.pow(1000, n(game.transcendenceLevel)) * n(DEF.tra.tra_mult.effect(game.traUpgrades.tra_mult), 1));
         }
 
         function getBPMultiplier() {
-            return n(DEF.asc.asc_bp_multiplier.effect(game.ascUpgrades.asc_bp_multiplier), 1) * n(DEF.is.bp_efficiency.effect(game.upgrades.bp_efficiency), 1);
+            return cap(n(DEF.asc.asc_bp_multiplier.effect(game.ascUpgrades.asc_bp_multiplier), 1) * n(DEF.is.bp_efficiency.effect(game.upgrades.bp_efficiency), 1));
         }
 
         function getRepairSpeedMultiplier() {
-            return n(DEF.asc.asc_speed_boost.effect(game.ascUpgrades.asc_speed_boost), 1) * n(DEF.is.repair_overdrive.effect(game.upgrades.repair_overdrive), 1);
+            return cap(n(DEF.asc.asc_speed_boost.effect(game.ascUpgrades.asc_speed_boost), 1) * n(DEF.is.repair_overdrive.effect(game.upgrades.repair_overdrive), 1));
         }
 
         function getBaseRepairSpeed() {
@@ -740,14 +757,34 @@
         }
 
         function getISMultiplier() {
-            return n(DEF.is.shard_refinery.effect(game.upgrades.shard_refinery), 1) * n(DEF.asc.is_boost.effect(game.ascUpgrades.is_boost), 1);
+            return cap(n(DEF.is.shard_refinery.effect(game.upgrades.shard_refinery), 1) * n(DEF.asc.is_boost.effect(game.ascUpgrades.is_boost), 1));
+        }
+
+        function getAPGain(gens = game.genFinished) {
+            return cap(Math.floor(n(gens) / 2 * n(DEF.asc.ap_gain.effect(game.ascUpgrades.ap_gain), 1)));
+        }
+
+        // AP獲得量が今より増えるまでに必要な修理数（AP倍率を考慮）
+        function gensToNextAP() {
+            const g = n(game.genFinished); const m = n(DEF.asc.ap_gain.effect(game.ascUpgrades.ap_gain), 1);
+            const cur = getAPGain(g);
+            let k = Math.max(1, Math.ceil(2 * (cur + 1) / m) - g);
+            while (k > 1 && getAPGain(g + k - 1) > cur) k--;
+            while (getAPGain(g + k) <= cur && k < 1e6) k++;
+            return k;
         }
 
         function init() {
             loadGame();
-            applySkin(game.activeSkin || 'default');
+            applySkin(game.activeSkin || 'default', true);
+            renderUpgrades();
             updateUI();
             requestAnimationFrame(gameLoop);
+
+            // 自動セーブ（定期 + 閉じる/裏に回るとき）
+            setInterval(() => saveGame(), AUTO_SAVE_INTERVAL);
+            window.addEventListener('beforeunload', () => saveGame());
+            document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
 
             const area = document.getElementById('game-click-area');
             const start = (e) => {
@@ -763,18 +800,36 @@
 
             area.addEventListener('mousedown', start);
             window.addEventListener('mouseup', stop);
-            window.addEventListener('keydown', (e) => { if (e.code === 'Space' && !e.repeat) { e.preventDefault(); start(e); } });
-            window.addEventListener('keyup', (e) => { if (e.code === 'Space') stop(); });
+            // Space はフォーカス中のボタン（LOAD・リセットなど）を押さないよう、押下・離上とも既定動作を止める
+            window.addEventListener('keydown', (e) => {
+                if (e.code !== 'Space') return;
+                e.preventDefault();
+                if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+                if (!e.repeat) start(e);
+            });
+            window.addEventListener('keyup', (e) => { if (e.code === 'Space') { e.preventDefault(); stop(); } });
+        }
+
+        // スキルチェック開始からの経過時間で針の角度を求める（フレームの粗さに左右されない）
+        function currentNeedleAngle(now = performance.now()) {
+            const spd = n(DEF.bp.precision.effect(game.upgrades.precision).speed, 1);
+            return temp.needleStartAngle + CONFIG.BASE_NEEDLE_SPEED * spd * (now - temp.needleStartTime) / 1000;
         }
 
         function triggerSkillCheck() {
             temp.skillCheckActive = true;
-            temp.needleAngle = n(DEF.asc.needle_stabilizer.effect(game.ascUpgrades.needle_stabilizer));
+            temp.needleStartAngle = n(DEF.asc.needle_stabilizer.effect(game.ascUpgrades.needle_stabilizer));
+            temp.needleStartTime = performance.now();
+            temp.needleAngle = temp.needleStartAngle;
             const needle = document.getElementById('needle');
-            if (needle) needle.style.display = 'block';
+            if (needle) { needle.style.display = 'block'; needle.style.transform = `rotate(${temp.needleAngle}deg)`; }
             const prec = DEF.bp.precision.effect(game.upgrades.precision);
-            const start = 140 + Math.random() * 120; const end = start + 20 + n(prec.width);
-            temp.targetRange = [start, end]; temp.greatRange = [start, start + 5];
+            const width = 20 + n(prec.width);
+            // ゾーンが一周（360°）を超えて針が届かない部分ができないようにする
+            const minStart = 140, maxEnd = 350;
+            const start = minStart + Math.random() * Math.max(0, maxEnd - minStart - width);
+            const end = start + width;
+            temp.targetRange = [start, end]; temp.greatRange = [start, start + CONFIG.GREAT_WIDTH];
 
             // スタイルから現在のスキンの色を取得
             const style = getComputedStyle(document.body);
@@ -782,12 +837,13 @@
             const greatColor = style.getPropertyValue('--sc-great-color').trim();
 
             document.getElementById('target-zone').style.background = `conic-gradient(transparent ${start}deg, ${targetColor} ${start}deg, ${targetColor} ${end}deg, transparent ${end}deg)`;
-            document.getElementById('great-zone').style.background = `conic-gradient(transparent ${start}deg, ${greatColor} ${start}deg, ${greatColor} ${start + 5}deg, transparent ${start + 5}deg)`;
+            const gEnd = start + CONFIG.GREAT_WIDTH;
+            document.getElementById('great-zone').style.background = `conic-gradient(transparent ${start}deg, ${greatColor} ${start}deg, ${greatColor} ${gEnd}deg, transparent ${gEnd}deg)`;
         }
 
         function handleSkillCheck() {
             if (!temp.skillCheckActive) return;
-            const angle = temp.needleAngle % 360; const mult = getMultiplier();
+            const angle = currentNeedleAngle(); const mult = getMultiplier();
             const bpBonus = 1 + n(DEF.bp.sc_bonus.effect(game.upgrades.sc_bonus));
             const gMult = n(DEF.asc.great_buff.effect(game.ascUpgrades.great_buff));
 
@@ -803,6 +859,7 @@
                 if (Math.random() < DEF.asc.auto_check.effect(game.ascUpgrades.auto_check)) notify("EVADED!");
                 else game.progress = Math.max(0, game.progress - 15);
             }
+            clampState();
             temp.skillCheckActive = false;
             document.getElementById('needle').style.display = 'none';
             document.getElementById('target-zone').style.background = document.getElementById('great-zone').style.background = 'none';
@@ -829,16 +886,17 @@
             } else document.getElementById('stat-repair-speed').textContent = "0.00";
 
             if (temp.skillCheckActive) {
-                const spd = n(DEF.bp.precision.effect(game.upgrades.precision).speed, 1);
-                temp.needleAngle += CONFIG.BASE_NEEDLE_SPEED * spd * dt;
+                temp.needleAngle = currentNeedleAngle();
                 document.getElementById('needle').style.transform = `rotate(${temp.needleAngle}deg)`;
                 if (temp.needleAngle > 360) handleSkillCheck();
             }
 
+            clampState();
             if (game.progress >= 100) {
                 const c = Math.floor(game.progress / 100); game.progress %= 100;
                 game.genFinished += c; game.totalGenFinished += c;
                 game.is += c * mult * getISMultiplier();
+                clampState();
                 updateUI();
 
                 // 自動昇華チェック
@@ -884,12 +942,12 @@
             const container = document.getElementById('upgrade-container'); container.innerHTML = '';
             if (temp.activeTab === 'asc') {
                 const req = 5 + n(game.ascensionLevel) * 5;
-                const gain = Math.floor(n(game.genFinished) / 2 * n(DEF.asc.ap_gain.effect(game.ascUpgrades.ap_gain), 1));
-                const nextGen = 2 - (game.genFinished % 2);
+                const gain = getAPGain();
+                const nextGen = gensToNextAP();
                 let html = `<div class="upgrade-card ${game.genFinished >= req ? '' : 'disabled'}" data-req-gen="${req}" style="border: 1px solid var(--accent-asc); background: rgba(128,0,128,0.05);">
                     <h3 style="color: var(--accent-asc); margin-bottom: 3px; font-size:0.9rem;">昇華 (Ascension)</h3>
                     <p style="font-size: 0.7rem; margin-bottom: 4px;">獲得可能: <strong style="color:var(--accent-asc)" id="asc-gain-val">+${f(gain)} AP</strong></p>
-                    <p style="font-size: 0.6rem; color: var(--text-dim); margin-bottom: 8px;" id="asc-next-ap-val">(あと ${nextGen} 修理完了で +1 AP)</p>
+                    <p style="font-size: 0.6rem; color: var(--text-dim); margin-bottom: 8px;" id="asc-next-ap-val">(あと ${f(nextGen)} 修理完了で AP増加)</p>
                     <button class="save-btn" style="background: var(--accent-asc); color: #000; font-weight: bold; width: 100%; border:none; padding: 6px; border-radius: 4px;" onclick="doAscension()">昇華を実行</button></div>`;
 
                 if (n(game.ascUpgrades.skin_unlock) > 0) {
@@ -959,16 +1017,22 @@
             const cost = def.cost(lv);
             if (game.ap >= cost) { game.ap -= cost; game.ascUpgrades[id]++; renderSpecial(); updateUI(); saveGame(); }
         }
-        function applySkin(id) { if (SKINS[id] && SKINS[id].unlocked()) { game.activeSkin = id; document.body.className = SKINS[id].class; renderSpecial(); saveGame(); } }
-        function doAscension() { if (game.genFinished < (5 + n(game.ascensionLevel) * 5)) return; game.ascensionLevel++; game.ap += Math.floor(n(game.genFinished) / 2 * n(DEF.asc.ap_gain.effect(game.ascUpgrades.ap_gain), 1)); game.bp = game.is = game.genFinished = game.progress = 0; Object.keys(game.upgrades).forEach(k => game.upgrades[k] = 0); saveGame(); updateUI(); switchTab('bp'); }
+        function applySkin(id, silent = false) {
+            if (!SKINS[id] || !SKINS[id].unlocked()) id = 'default';
+            game.activeSkin = id; document.body.className = SKINS[id].class;
+            if (temp.activeTab === 'asc') renderSpecial();
+            if (!silent) saveGame();
+        }
+        function doAscension() { if (game.genFinished < (5 + n(game.ascensionLevel) * 5)) return; game.ascensionLevel++; game.ap = cap(game.ap + getAPGain()); game.bp = game.is = game.genFinished = game.progress = 0; Object.keys(game.upgrades).forEach(k => game.upgrades[k] = 0); saveGame(); updateUI(); switchTab('bp'); }
         function doTranscendence() {
             if (n(game.ascensionLevel) < 10) return;
             const gainTP = Math.floor(Math.pow(10, n(game.ascensionLevel) - 10));
             game.transcendenceLevel++;
-            game.tp += gainTP;
-            game.bp = game.is = game.ap = game.genFinished = game.ascensionLevel = 0;
+            game.tp = cap(game.tp + gainTP);
+            game.bp = game.is = game.ap = game.genFinished = game.ascensionLevel = game.progress = 0;
             Object.keys(game.upgrades).forEach(k => game.upgrades[k] = 0);
             Object.keys(game.ascUpgrades).forEach(k => game.ascUpgrades[k] = 0);
+            applySkin(game.activeSkin, true); // 解放が外れたスキンは Classic に戻る
             saveGame();
             updateUI();
             switchTab('bp');
@@ -997,12 +1061,11 @@
                 const gainVal = document.getElementById('asc-gain-val');
                 const nextApVal = document.getElementById('asc-next-ap-val');
                 if (gainVal) {
-                    const gain = Math.floor(n(game.genFinished) / 2 * n(DEF.asc.ap_gain.effect(game.ascUpgrades.ap_gain), 1));
+                    const gain = getAPGain();
                     gainVal.textContent = `+${f(gain)} AP`;
                 }
                 if (nextApVal) {
-                    const nextGen = 2 - (game.genFinished % 2);
-                    nextApVal.textContent = `(あと ${nextGen} 修理完了で +1 AP)`;
+                    nextApVal.textContent = `(あと ${f(gensToNextAP())} 修理完了で AP増加)`;
                 }
             }
 
@@ -1039,11 +1102,34 @@
             });
         }
 
-        function saveGame() { localStorage.setItem(SAVE_FINAL_KEY, JSON.stringify(game)); notify("SAVED"); }
+        // showNotify は SAVE ボタンを押したときだけ true（自動セーブや購入時は通知しない）
+        function saveGame(showNotify = false) {
+            if (temp.resetting) return;
+            try {
+                clampState();
+                localStorage.setItem(SAVE_FINAL_KEY, JSON.stringify(game));
+                if (showNotify) notify("SAVED");
+            } catch (err) {
+                console.error('セーブに失敗しました', err);
+                if (showNotify) notify("SAVE FAILED");
+            }
+        }
         function loadGame() {
-            const d = localStorage.getItem(SAVE_FINAL_KEY) || localStorage.getItem('dbd_inc_evolution_ultra_v4');
+            let d = null;
+            try { d = localStorage.getItem(SAVE_FINAL_KEY) || localStorage.getItem(LEGACY_SAVE_KEY); } catch (err) { console.error(err); }
             if (d) {
-                const p = JSON.parse(d);
+                let p;
+                try {
+                    p = JSON.parse(d);
+                    if (!p || typeof p !== 'object') throw new Error('invalid save');
+                } catch (err) {
+                    // 壊れたデータは別キーに退避して、初期状態で起動する
+                    console.error('セーブデータを読み込めませんでした', err);
+                    try { localStorage.setItem(SAVE_FINAL_KEY + '_corrupted', d); } catch (e2) { }
+                    game = JSON.parse(JSON.stringify(DEFAULT_GAME));
+                    setTimeout(() => notify("セーブデータ破損: 初期化しました"), 0);
+                    return;
+                }
                 // ディープマージ
                 Object.keys(DEFAULT_GAME).forEach(k => {
                     if (DEFAULT_GAME[k] !== null && typeof DEFAULT_GAME[k] === 'object') {
@@ -1052,11 +1138,14 @@
                         game[k] = p[k] !== undefined ? p[k] : DEFAULT_GAME[k];
                     }
                 });
+                clampState();
             }
         }
         function fullResetInternal() {
             if (confirm("全てのデータを完全に削除し、初期状態に戻しますか？（元に戻せません）")) {
-                localStorage.clear();
+                // このゲームのキーだけ消す（同じドメインの他サイトのデータは残す）
+                temp.resetting = true; // リロード時の自動セーブで書き戻さない
+                [SAVE_FINAL_KEY, LEGACY_SAVE_KEY, SAVE_FINAL_KEY + '_corrupted'].forEach(k => localStorage.removeItem(k));
                 location.reload();
             }
         }
